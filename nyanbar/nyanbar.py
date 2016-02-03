@@ -14,6 +14,8 @@ progress.task_done()
 
 """
 
+from __future__ import print_function
+
 VERSION = '0.3'
 
 __author__ = 'Andrew Gwozdziewycz <web@apgwoz.com>'
@@ -58,6 +60,15 @@ AUDIO_PLAYERS = [('afplay', []),
                  ('mplayer', ['-really-quiet',]),
                  ]
 
+
+
+def getTerminalSize():
+  try:
+    rows, columns = subprocess.check_output(['stty', 'size']).split()
+    rows, columns = int(rows), int(columns)
+  except:
+    rows, columns = 25, 80
+  return (rows, columns)
 
 
 def background(color):
@@ -143,7 +154,8 @@ class NyanBar(threading.Thread):
 
     def _draw(self, amt):
         if self._showing:
-            width = 35 * (amt / 100.0) # 70 characters, but stream pieces are len 2
+            terminal_width = getTerminalSize()[1]
+            width = ((terminal_width - 10) / 2.0) * (amt / 100.0) # 70 characters, but stream pieces are len 2
             st = next(stream) * int(width)
             t = next(toast)
             params = (colored(st, next(colors), next(bgcolors)),
@@ -170,8 +182,8 @@ class NyanBar(threading.Thread):
 
     def finish(self):
         self._finished = True
-        print("\x1b[4B") # move cursor 4 lines down
-        print("\x1b[J")
+        print("\x1b[4B", end="") # move cursor 4 lines down
+        print("\x1b[J", end="")
 
         if self._audiopid:
             # kill it.
