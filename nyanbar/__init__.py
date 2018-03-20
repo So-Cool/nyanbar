@@ -1,1 +1,1 @@
-from nyanbar import *
+from .nyanbar import *
